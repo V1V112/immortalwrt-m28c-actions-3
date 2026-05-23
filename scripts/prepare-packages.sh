@@ -12,6 +12,7 @@ need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
 PACKAGE_SOURCES="$PROJECT_DIR/feeds/package-sources.conf"
+PACKAGES_TO_REMOVE="$PROJECT_DIR/feeds/packages-to-remove.conf"
 
 CUSTOM_DIR="$OPENWRT_DIR/package/custom"
 LOCAL_DIR="$OPENWRT_DIR/package/local"
@@ -41,14 +42,24 @@ remove_feed_package_defs() {
 }
 
 log "Removing built-in packages replaced by third-party sources"
-remove_if_exists "$OPENWRT_DIR/feeds/packages/net/mosdns"
-remove_if_exists "$OPENWRT_DIR/feeds/packages/net/v2ray-geodata"
-remove_if_exists "$OPENWRT_DIR/package/feeds/packages/mosdns"
-remove_if_exists "$OPENWRT_DIR/package/feeds/packages/v2ray-geodata"
-remove_feed_package_defs mosdns
-remove_feed_package_defs v2ray-geodata
-remove_feed_package_defs v2ray-geoip
-remove_feed_package_defs v2ray-geosite
+if [ -f "$PACKAGES_TO_REMOVE" ]; then
+  while read -r package_name rest; do
+    case "${package_name:-}" in
+      ""|\#*) continue ;;
+    esac
+    
+    [ -z "${rest:-}" ] || die "Invalid packages-to-remove line: $package_name (expected only package name)"
+    
+    # Remove from common feed paths
+    remove_if_exists "$OPENWRT_DIR/feeds/packages/net/$package_name"
+    remove_if_exists "$OPENWRT_DIR/package/feeds/packages/$package_name"
+    
+    # Remove package definitions from feeds
+    remove_feed_package_defs "$package_name"
+  done < "$PACKAGES_TO_REMOVE"
+else
+  warn "No packages-to-remove config found, skipping package removal"
+fi
 
 clone_package_source() {
   local name="$1"
