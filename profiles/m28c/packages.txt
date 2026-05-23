@@ -12,9 +12,18 @@ luci-compat
 luci-i18n-base-zh-cn
 
 # 主题
+# argon
 luci-theme-argon
 luci-app-argon-config
 luci-i18n-argon-config-zh-cn
+
+# aurora
+luci-theme-aurora
+luci-app-aurora-config
+luci-i18n-aurora-config-zh-cn
+
+# material3
+luci-theme-material3
 
 # Firewall4 / nftables 防火墙支持
 firewall4
