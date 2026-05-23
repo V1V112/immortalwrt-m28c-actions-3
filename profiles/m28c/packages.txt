@@ -38,6 +38,7 @@ kmod-inet-diag
 
 # TCP 拥塞控制算法支持
 kmod-tcp-bbr
+kmod-sched-extra
 
 # ttyd 网页终端
 ttyd
@@ -118,9 +119,7 @@ luci-app-at-webserver
 
 # smartdns
 smartdns
-smartdns-ui
 luci-app-smartdns
-luci-i18n-smartdns-zh-cn
 
 # mosdns
 mosdns
