@@ -1,0 +1,52 @@
+#### 数据列表 ####
+
+plugins:
+  # 自定义hosts
+  - tag: hosts
+    type: hosts
+    args:
+      files:
+        - mosdns_load_rules/geoip/hosts      # 自定义hosts
+### ============ 域名列表 ============ ###
+  # ## 广告域名列表 ##
+  # - tag: geosite:reject
+  #   type: sd_set
+  #   args:
+  #     local_config: "mosdns_rules_srs/json/reject.json"
+
+  ## 直连域名列表 ##
+  - tag: geosite:direct
+    type: sd_set
+    args:
+      local_config: "mosdns_rules_srs/json/direct.json"
+
+  ## 代理域名列表 ##
+  - tag: geosite:proxy
+    type: sd_set
+    args:
+      local_config: "mosdns_rules_srs/json/proxy.json"
+
+  ## FakeIP 域名列表 ##
+  - tag: geosite:fakeip
+    type: sd_set
+    args:
+      local_config: "mosdns_rules_srs/json/fakeip.json"
+
+  ## Cloudflare 域名列表 ##
+  - tag: geosite:cloudflare
+    type: sd_set
+    args:
+      local_config: "mosdns_rules_srs/json/cloudflare.json"
+
+### ============ IP 列表 ============###
+  ## 国内 IP 段 ##
+  - tag: geoip:cn
+    type: si_set
+    args:
+      local_config: "mosdns_rules_srs/json/china-ip.json"
+
+  ## Cloudflare IP 段 ##
+  - tag: geoip:cloudflare
+    type: si_set
+    args:
+      local_config: "mosdns_rules_srs/json/cloudflare-ip.json"

@@ -1,0 +1,16 @@
+
+config at-webserver 'config'
+	option enabled '1'
+	option connection_type 'SERIAL'
+	option network_allow_wan '0'
+	option network_restrict_access '0'
+	option serial_port '/dev/ttyUSB1'
+	option serial_baudrate '115200'
+	option serial_timeout '10'
+	option websocket_port '8765'
+	option websocket_allow_wan '0'
+	option notify_sms '0'
+	option notify_call '0'
+	option notify_memory_full '0'
+	option notify_signal '0'
+

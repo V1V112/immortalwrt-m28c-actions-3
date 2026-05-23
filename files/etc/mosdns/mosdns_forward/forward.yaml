@@ -1,0 +1,67 @@
+plugins:
+## SmartDNS 组 ##
+  - tag: smartdns_direct
+    type: forward
+    args:
+      concurrent: 1
+      upstreams:
+        - addr: 127.0.0.1:531      # SmartDNS Direct
+#        - addr: 223.5.5.5:53
+
+  - tag: smartdns_proxy
+    type: forward
+    args:
+      concurrent: 1
+      upstreams:
+        - addr: 127.0.0.1:532      # SmartDNS Proxy
+#        - addr: 1.1.1.1:853
+
+## FakeIP DNS ##
+  - tag: fakeip_dns
+    type: forward
+    args:
+      concurrent: 1
+      upstreams:
+        - addr: 127.0.0.1:5300      # FakeIP DNS
+
+  # FakeIP 主解析序列：只接受真正有效的 FakeIP 应答；异常/无应答则丢弃，交给 fallback 触发 smartdns_proxy。
+  - tag: fakeip_primary
+    type: sequence
+    args:
+      - exec: $fakeip_dns      # 使用 FakeIP DNS 解析
+
+      # A / AAAA 有应答：接受 FakeIP 结果
+      - matches:
+          - "qtype 1 28"  # A / AAAA
+          - has_resp      # 有应答
+        exec: accept       # 接受结果
+
+      # 域名不存在：直接接受，避免回滚到 SmartDNS Proxy 再试一次
+      - matches:
+          - "rcode 3"     # NXDOMAIN / 域名不存在
+        exec: accept      # 接受结果
+
+      # 上游明确异常：丢弃应答，触发 fallback 的 secondary
+      - matches:
+          - "rcode 2"     # SERVFAIL / 服务器失败 / 上游解析失败
+        exec: drop_resp      # 上游明确拒绝：丢弃应答，触发 fallback 的 secondary
+      - matches:
+          - "rcode 5"     # REFUSED / 拒绝 / 上游拒绝解析
+        exec: drop_resp      # 上游明确拒绝：丢弃应答，触发 fallback 的 secondary
+
+      # 没有应答：丢弃，触发 fallback 的 secondary
+      - matches:
+          - "!has_resp"      # 无应答
+        exec: drop_resp      # 无应答：丢弃，触发 fallback 的 secondary
+
+      # 其它情况保持当前结果
+      - exec: accept      # 其它情况仍然接受结果
+
+  # FakeIP 优先，失败/无应答/超时/被 drop_resp 时回退到 smartdns_proxy。
+  - tag: fakeip_or_proxy
+    type: fallback
+    args:
+      primary: fakeip_primary      # 首选 FakeIP 主解析序列
+      secondary: smartdns_proxy      # 备选 SmartDNS Proxy 解析
+      threshold: 1000      # primary 响应时间超过 500ms 则视为超时，触发 secondary
+      always_standby: false      # 始终保持 secondary 处于待命状态，避免触发时才启动导致的额外延迟

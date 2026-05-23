@@ -1,0 +1,209 @@
+{
+  "log": {
+    "disabled": true,
+    "level": "info",
+    "output": "sing-box.log",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      { "tag": "direct", "type": "udp", "server": "119.29.29.29" },
+      { "tag": "overseas", "type": "tls", "server": "1.1.1.1" },
+      { "tag": "foreign", "type": "https", "server": "8.8.8.8", "detour": "节点选择" },
+      { "tag": "fakeip", "type": "fakeip", "inet4_range": "30.0.0.0/8", "inet6_range": "fc00::/18" }
+    ],
+    "rules": [
+      { "inbound": "fakeip_dns-in", "server": "fakeip", "rewrite_ttl": 2 },
+      { "clash_mode": "direct", "server": "direct" },
+      { "clash_mode": "global", "server": "fakeip" },
+      { "query_type": "HTTPS", "action": "reject" },
+      { "query_type": ["A", "AAAA"], "server": "fakeip", "rewrite_ttl": 2 },
+      { "rule_set": "geosite:cn", "server": "direct" }
+    ],
+    "final": "direct",
+    "strategy": "prefer_ipv4",
+    "client_subnet": "120.80.80.80/32",
+    "reverse_mapping": false
+  },
+  "inbounds": [
+    { "tag": "dns-in", "type": "direct", "listen": "::", "listen_port": 5335 },
+    { "tag": "fakeip_dns-in", "type": "direct", "listen": "::", "listen_port": 5300 },
+    { "tag": "http-in", "type": "http", "listen": "::", "listen_port": 7890 },
+    { "tag": "socks-in", "type": "socks", "listen": "::", "listen_port": 7891 },
+    { "tag": "mixed-in", "type": "mixed", "listen": "::", "listen_port": 7892 },
+    { "tag": "redirect-in", "type": "redirect", "listen": "::", "listen_port": 7893 },
+    { "tag": "tproxy-in", "type": "tproxy", "listen": "::", "listen_port": 7894 }
+  ],
+  "providers": [
+    {
+      "tag": "FlareiX_100G",
+      "type": "remote",
+      "health_check": {
+          "enabled": false,
+          "url": "https://www.gstatic.com/generate_204",
+          "interval": "10m",
+          "timeout": "3s"
+      },
+      "url": "https://156.245.232.84:8443/api/proxy/open/subscription?passwd=acf96a6e-b84a-dbfd-acf9-6a6eb84adbfd&client=SIP002",
+      "exclude": "官网|剩余|流量|套餐|免费|订阅|全球直连|到期时间|GB|Expire Date|Traffic|ExpireDate",
+      "download_detour": "全球直连",
+      "update_interval": "12h"
+    },
+    {
+      "tag": "200G",
+      "type": "remote",
+      "health_check": {
+          "enabled": false,
+          "url": "https://www.gstatic.com/generate_204",
+          "interval": "10m",
+          "timeout": "3s"
+      },
+      "url": "https://sub1.qingze-quick.top/subscribe/fb3505e5304c320f26cddb200f7ab0a7",
+      "exclude": "官网|剩余|流量|套餐|免费|订阅|全球直连|到期时间|GB|Expire Date|Traffic|ExpireDate",
+      "download_detour": "全球直连",
+      "update_interval": "12h"
+    }
+  ],
+  "outbounds": [
+    { "tag":"🌐HOME_IPv4_HK", "type":"shadowsocks", "server":"83.229.123.160", "server_port":50000, "method":"aes-128-gcm", "password":"N7qLw9s_VP4eKx28mRA6zYtF5bCj3HDu" },
+    { "tag":"🌐HOME_IPv4_US", "type":"shadowsocks", "server":"23.224.49.102", "server_port":50000, "method":"aes-128-gcm", "password":"N7qLw9s_VP4eKx28mRA6zYtF5bCj3HDu" },
+    { "tag":"🌐HOME_IPv6_GD", "type":"shadowsocks", "server":"home.sharedrive.top", "server_port":50000, "method":"aes-128-gcm", "password":"N7qLw9s_VP4eKx28mRA6zYtF5bCj3HDu", "udp_fragment": true },
+    { "tag": "节点选择", "type": "selector", "outbounds": ["香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "AI", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "TikTok", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "YouTube", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Google", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Instagram", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Twitter", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Facebook", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Pinterest", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Discord", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "GitHub", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "OneDrive", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Microsoft", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "CloudFlare", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Docker", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Pixiv", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Steam", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "HXD_Emby", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "Telegram", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "GFW", "type": "selector", "outbounds": ["节点选择", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移", "全部节点_手动"] },
+    { "tag": "漏网之鱼", "type": "selector", "outbounds": ["节点选择", "全部节点_手动", "香港_手动", "香港_故障转移", "台湾_手动", "台湾_故障转移", "日本_手动", "日本_故障转移", "新加坡_手动", "新加坡_故障转移", "美国_手动", "美国_故障转移"] },
+
+    { "tag": "192.168.2.0/24", "type": "selector", "outbounds": [ "🌐HOME_IPv4_HK", "🌐HOME_IPv4_US", "🌐HOME_IPv6_GD" ] },
+
+    { "tag": "香港_手动", "type": "selector", "outbounds": null, "use_all_providers": true, "include" :"🇭🇰|HK|hk|香港|港|(?i)Hong" },
+    { "tag": "台湾_手动", "type": "selector", "outbounds": null, "use_all_providers": true, "include": "🇹🇼|TW|tw|台湾|台|(?i)Tai" },
+    { "tag": "日本_手动", "type": "selector", "outbounds": null, "use_all_providers": true, "include": "🇯🇵|JP|jp|日本|日|(?i)Japa" },
+    { "tag": "新加坡_手动", "type": "selector", "outbounds": null, "use_all_providers": true, "include": "🇸🇬|SG|sg|新加坡|狮|(?i)Sing" },
+    { "tag": "美国_手动", "type": "selector", "outbounds": null, "use_all_providers": true, "include": "🇺🇸|US|USA|us|usa|美国|美|(?i)Uni|(?i)Amer" },
+
+    { "tag": "香港_故障转移", "type": "urltest", "interval": "5m", "outbounds": ["香港_手动"], "use_all_providers": true, "include" :"🇭🇰|HK|hk|香港|港|(?i)Hong", "fallback": {"enabled": true} },
+    { "tag": "台湾_故障转移", "type": "urltest", "interval": "5m", "outbounds": ["台湾_手动"], "use_all_providers": true, "include" :"🇹🇼|TW|tw|台湾|台|(?i)Tai", "fallback": {"enabled": true} },
+    { "tag": "日本_故障转移", "type": "urltest", "interval": "5m", "outbounds": ["日本_手动"], "use_all_providers": true, "include": "🇯🇵|JP|jp|日本|日|(?i)Japa", "fallback": {"enabled": true} },
+    { "tag": "新加坡_故障转移", "type": "urltest", "interval": "5m", "outbounds": ["新加坡_手动"], "use_all_providers": true, "include": "🇸🇬|SG|sg|新加坡|狮|(?i)Sing", "fallback": {"enabled": true} },
+    { "tag": "美国_故障转移", "type": "urltest", "interval": "5m", "outbounds": ["美国_手动"], "use_all_providers": true, "include": "🇺🇸|US|USA|us|usa|美国|美|(?i)Uni|(?i)Amer", "fallback": {"enabled": true} },
+
+    { "tag": "全部节点_手动", "type": "selector", "outbounds": null, "use_all_providers": true, "exclude": "网站|流量|地址|剩余|过期|免费|时间|有效|Traffic|ExpireDate|GB|Expire Date" },
+
+    { "tag": "全球直连", "type": "direct" },
+    { "tag": "GLOBAL", "type": "selector", "outbounds": [
+        "节点选择",
+        "AI",
+        "TikTok",
+        "YouTube",
+        "Google",
+        "Instagram",
+        "Twitter",
+        "Facebook",
+        "Pinterest",
+        "Discord",
+        "GitHub",
+        "OneDrive",
+        "Microsoft",
+        "CloudFlare",
+        "Docker",
+        "Pixiv",
+        "Steam",
+        "HXD_Emby",
+        "Telegram",
+        "GFW",
+        "漏网之鱼",
+        "香港_手动", "台湾_手动", "日本_手动", "新加坡_手动", "美国_手动",
+        "香港_故障转移", "台湾_故障转移", "日本_故障转移", "新加坡_故障转移", "美国_故障转移",
+        "全球直连"
+        ] }
+  ],
+  "route": {
+    "rules": [
+      { "inbound": "fakeip_dns-in", "action": "hijack-dns" },
+      { "ip_cidr": ["192.168.2.0/24"], "outbound": "192.168.2.0/24" },
+      { "action": "sniff", "sniffer": ["http", "tls", "quic", "dns"] },
+      { "protocol": "quic", "action": "reject" },
+      { "network": "udp", "port": 443, "action": "reject" },
+      { "inbound": "dns-in", "action": "hijack-dns" },
+      { "ip_is_private": true, "outbound": "全球直连" },
+      { "clash_mode": "direct", "outbound": "全球直连" },
+      { "clash_mode": "global", "outbound": "GLOBAL" },
+      { "rule_set": "geosite:category-ai-!cn", "outbound": "AI" },
+      { "rule_set": "geosite:tiktok", "outbound": "TikTok" },
+      { "rule_set": "geosite:youtube", "outbound": "YouTube" },
+      { "rule_set": "geosite:google", "outbound": "Google" },
+      { "rule_set": "geosite:instagram", "outbound": "Instagram" },
+      { "rule_set": "geosite:twitter", "outbound": "Twitter" },
+      { "rule_set": "geosite:facebook", "outbound": "Facebook" },
+      { "rule_set": "geosite:pinterest", "outbound": "Pinterest" },
+      { "rule_set": "geosite:discord", "outbound": "Discord" },
+      { "rule_set": "geosite:github", "outbound": "GitHub" },
+      { "rule_set": "geosite:onedrive", "outbound": "OneDrive" },
+      { "rule_set": "geosite:microsoft", "outbound": "Microsoft" },
+      { "rule_set": "geosite:cloudflare", "outbound": "CloudFlare" },
+      { "rule_set": "geosite:docker", "outbound": "Docker" },
+      { "rule_set": "geosite:pixiv", "outbound": "Pixiv" },
+      { "rule_set": "geosite:steam", "outbound": "Steam" },
+      { "domain_suffix": "emby.as174.de", "outbound": "HXD_Emby" },
+      { "rule_set": "geosite:gfw", "outbound": "GFW" },
+      { "rule_set": "geoip:telegram", "outbound": "Telegram" },
+      { "rule_set": "geoip:cloudflare", "outbound": "CloudFlare" },
+      { "rule_set": "geoip:cn", "outbound": "全球直连" }
+    ],
+    "rule_set": [
+      { "tag": "geosite:category-ai-!cn", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:tiktok", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/tiktok.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:youtube", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/youtube.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:google", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/google.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:instagram", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/instagram.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:twitter", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/twitter.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:facebook", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/facebook.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:pinterest", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/pinterest.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:discord", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/discord.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:github", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/github.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:onedrive", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/onedrive.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:microsoft", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/microsoft.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:cloudflare", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/cloudflare.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:docker", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/docker.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:pixiv", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/pixiv.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:steam", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/steam.srs", "download_detour": "全球直连" },
+      { "tag": "geosite:gfw", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs", "download_detour": "全球直连" },
+      { "tag": "geoip:telegram", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/telegram.srs", "download_detour": "全球直连" },
+      { "tag": "geoip:cloudflare", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cloudflare.srs", "download_detour": "全球直连" },
+      { "tag": "geoip:cn", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cn.srs", "download_detour": "全球直连" },
+
+      { "tag": "geosite:cn", "type": "remote", "format": "binary", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/cn.srs", "download_detour": "全球直连" }
+    ],
+    "final": "漏网之鱼",
+    "default_domain_resolver": { "server": "direct" }
+  },
+  "experimental": {
+    "cache_file": { "enabled": true, "path": "/etc/momo/run/cache.db", "store_fakeip": true },
+    "clash_api": {
+      "external_controller": "0.0.0.0:9090",
+      "external_ui": "/etc/momo/run/ui",
+      "external_ui_download_url": "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip",
+      "external_ui_download_detour": "全球直连",
+      "secret": "",
+      "default_mode": "rule"
+      },
+    "urltest_unified_delay": true
+  }
+}

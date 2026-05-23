@@ -1,0 +1,13 @@
+[
+  {
+    "name": "geoip:cloudflare",
+    "type": "geoip:cloudflare",
+    "files": "mosdns_rules_srs/srs/geoip/cloudflare.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geoip/cloudflare.srs",
+    "enabled": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 900,
+    "last_updated": "2026-05-22T00:00:00Z"
+  }
+]

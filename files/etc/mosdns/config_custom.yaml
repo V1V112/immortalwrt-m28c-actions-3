@@ -1,0 +1,153 @@
+log:
+  level: error    # 日志级别。可选 "debug" "info" "warn" "error"。默认 "info"。
+  # 日志文件路径。默认 "mosdns.log"（当前目录）。如果不需要日志文件可设置为 ""。
+  file: mosdns.log
+
+include:
+  ## NFT 规则添加 ##
+  - mosdns_nft/nft.yaml
+  ## 上游服务器 ##
+  - mosdns_forward/forward.yaml
+  ## AdGuard 文件 ##
+  - mosdns_adguard/adguard.yaml
+  ## SRS 数据列表 ##
+  - mosdns_rules_srs/srs.yaml
+  ## 未知域名判断（fallback） ##
+  - mosdns_fallback/fallback.yaml
+
+
+plugins:
+## 自定义 Fakeip 域名列表 ##
+  - tag: fakeip_domain
+    type: domain_set
+    args:
+      exps:
+        - domain:emby.as174.de      # Emby
+        - domain:javmenu.com      # Javdb
+        - domain:jdbstatic.com      # Javdb
+        - keyword:browserleaks      # DNS Leak Test
+
+    # 以 domain: 开头，域匹配。e.g: domain:google.com 会匹配自身 google.com，以及其子域名 www.google.com, maps.l.google.com 等。
+    # 以 full: 开头，完整匹配。e.g: full:google.com 只会匹配自身。
+    # 以 keyword: 开头，关键字匹配。e.g: keyword:google.com 会匹配包含这个字段的域名，如 google.com.hk, www.google.com.hk。
+    # 以 regexp: 开头，正则匹配(Golang 标准)。e.g: regexp:.+\.google\.com$。
+
+  # 重定向域名列表
+  - tag: redirect
+    type: redirect
+    args:
+      rules:
+        # - a.com b.com      # a.com 域名使用 b.com 解析结果
+
+# ===================================================================================
+# 运行序列（Execution Sequence）定义了 DNS 查询的处理流程。
+# 每个步骤可以是一个插件执行，也可以是一个条件判断（matches）来决定下一步的执行路径。
+# ===================================================================================
+
+
+# 子运行序列（Sub Sequences）是主运行序列中的一个步骤，可以包含自己的执行步骤和条件判断。
+# 通过 try 调用子运行序列可以捕获其中的 ErrExit 错误，避免影响主运行序列的执行流程。
+  # prefer_ipv4 / IPv4优先会并发触发参考 A 查询；此子序列内部可用 exit，但由 main_sequence 通过 try 调用以避免 ErrExit 影响 prefer_ipv4 判断
+  - tag: resolve_after_prefer
+    type: sequence
+    args:
+
+      # 解析域名重定向
+#      - exec: $redirect      # 域名重定向列表
+#      - matches: has_resp      # 有应答
+#        exec: exit      # 结束分支
+
+      # 解析自定义 FakeIP 域名
+      - matches:
+        - qname
+          $geosite:cloudflare
+          $fakeip_domain      # 自定义 FakeIP 域名
+        exec:
+          - $fakeip_or_proxy      # 如果 FakeIP DNS 没有任何应答、超时、异常，才走 smartdns_proxy
+      - matches:
+        - has_resp      # 有应答
+        exec: exit      # 结束分支
+
+      # 解析直连域名
+      - matches:
+        - qname
+          $geosite:direct      # 直连域名列表
+        exec:
+          - $smartdns_direct      # 使用 SmartDNS Direct 解析
+      - matches:
+        - has_resp      # 有应答
+        exec: exit      # 结束分支
+
+      # 解析 FakeIP 域名
+      - matches:
+        - qname
+          $geosite:fakeip      # FakeIP 域名列表
+        exec:
+          - $fakeip_or_proxy      # 如果 FakeIP DNS 没有任何应答、超时、异常，才走 smartdns_proxy
+      - matches:
+        - has_resp      # 有应答
+        exec: exit      # 结束分支
+
+      # 解析代理域名
+      - matches:
+        - qname
+          $geosite:proxy      # 代理域名列表
+        exec:
+          - $smartdns_proxy      # 使用 SmartDNS Proxy 解析
+      - matches:
+        - has_resp      # 有应答
+        exec: exit      # 结束分支
+
+      # 解析未知域名      可选：$smartdns_direct / $smartdns_proxy / $fakeip_or_proxy / $fakeip_dns/ $fallback 根据实际情况调整顺序和分组
+      - exec:
+        - $fallback      # 使用 fallback 解析
+      - matches:
+        - has_resp      # 有应答
+        exec: exit      # 结束分支
+
+# 主运行序列（Main Sequence）是 DNS 查询的入口，定义了查询的整体处理流程。可以包含多个步骤，每个步骤可以是插件执行或条件判断。
+  - tag: main_sequence
+    type: sequence
+    args:
+
+      # 本地 hosts 列表
+      - exec: $hosts      # 本地 hosts 列表
+      - matches: has_resp      # 有应答
+        exec: exit      # 结束分支
+
+      # 屏蔽 SOA / PTR / HTTPS / SVCB 类型
+      - matches:
+        - qtype 6 12 65 64      # SOA / PTR / HTTPS / SVCB 类型
+        exec: 
+          - reject 0      # NOERROR / 返回空响应
+          - exit      # 结束分支
+
+      # 屏蔽 AdGuard 在线广告域名
+      - matches:
+        - qname $adguard      # AdGuard 在线规则插件
+        exec:
+          - reject 0      # NOERROR / 返回空响应
+          - exit      # 结束分支
+
+      # 优先返回IPv4地址
+      - exec: prefer_ipv4      # 并发触发 A / AAAA 查询，优先返回 A 记录
+      - exec: try $resolve_after_prefer      # 进入 prefer_ipv4 子序列，处理 A 查询结果；如果子序列中 exit 导致 ErrExit 错误，则捕获并继续执行 AAAA 查询
+
+  # 启动监听服务
+  - tag: udp_server
+    type: udp_server      # UDP 监听服务
+    args:
+      entry: main_sequence      # 入口运行序列
+      listen: :53      # 监听地址和端口，格式为 IP:PORT
+      enable_audit: false      # 是否启用审计日志
+
+  - tag: tcp_server
+    type: tcp_server      # TCP 监听服务
+    args:
+      entry: main_sequence      # 入口运行序列
+      listen: :53      # 监听地址和端口，格式为 IP:PORT
+      enable_audit: false      # 是否启用审计日志
+
+# API 监听服务
+api:
+  http: 0.0.0.0:9099

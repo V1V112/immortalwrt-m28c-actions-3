@@ -1,0 +1,30 @@
+# [EBPF-ADAPT] 新增：nft_add 插件（可选启用 eBPF+NFT 透明代理加速）
+# [EBPF-ADAPT] 说明：
+#   - enable="nft_true" 才会加载 nft.conf 并注入 IP 集合；enable="nft_false" 则完全不动防火墙。
+#   - ebpf_enable="ebpf_true" 才会在 ebpf_iface 上挂载 TCX eBPF（需内核支持 + root 权限）。
+#   - 如你的 FakeIP 网段/端口与默认值不同，请同时改 nft.conf 与下面的 mihomo_* / singbox_* 参数。
+plugins:
+- tag: nft_add      # 插件实例名（在 mosdns 内部引用用），随便取但建议唯一
+  type: nft_add      # 插件类型：对应源码里的 nft_add 可执行插件（会加载 nft.conf、注入 sets、可挂 eBPF）
+  args:
+    socks5: ""                 # （可选）给插件自身用的 SOCKS5 代理地址（常用于需要下载/更新规则资源时走代理）为空表示不使用代理。若你在 nftadd.json 开启 auto_update 且网络受限，才有必要填。常见格式：socks5://127.0.0.1:1080
+    local_config: "mosdns_nft/nftadd.json"      # nft_add 的“规则来源配置文件”通常用于指定：要加载哪些 .srs 规则集（如 netflix.srs、telegram.srs）；是否自动更新（auto_update）；规则集来源 URL（若开启更新）。插件会读取这些规则集解析出 IP 前缀，后续注入 nft set +/或写入 eBPF map
+    nft_config:      # nft / eBPF 相关的主开关与路径配置
+      enable: "nft_true"      # 【总开关】是否执行 nft “落地动作” "nft_true"：会执行“重置表 + 加载 nft.conf + 注入 sets”等动作 "nft_false"：完全不动 nftables（不会 delete table / 不会 nft -f / 不会注入 sets）注意：这里是字符串开关，源码按固定字面值判断（不是布尔 true/false）
+      startup_delay: 5      # 启动延迟（秒）插件启动时会等待 N 秒再开始 Phase 流程 用途：等网络/接口/其它服务先起来，避免刚开机时 br-lan 尚未就绪导致挂载失败
+      table_family: "inet"      # nft 表族：inet 表示同时涵盖 IPv4/IPv6 专版使用 inet 是为了同时处理 v4/v6、减少重复规则
+      table_name: "sing-box"      # nft 表名（非常关键）插件在启动时会“重置”该表（通常是 delete table + 再 nft -f 加载）⚠️ 风险：如果你系统里已有同名表（比如 sing-box 自己建表），可能被误删 建议：改成独立表名（如 mosdns-ebpf），并同步改 nft.conf 里的 table 名
+      set_v4: "local_ipv4"      # IPv4 集合(set)名称：插件会把解析出来的 IPv4 前缀写进这个 set
+      set_v6: "local_ipv6"      # IPv6 集合(set)名称：插件会把解析出来的 IPv6 前缀写进这个 set 这两个 set 必须在 nft.conf 里已经定义好，且类型/flags 要匹配（通常 interval）
+      fixip: "mosdns_nft/fixip.txt"      # 额外补充的 IP 列表文件（你手工维护的“强制走代理/特殊分流 IP”）插件会把 fixip.txt 与 .srs 解析结果合并，再注入 local_ipv4/local_ipv6
+      nftfile: "mosdns_nft/nft.conf"      # nftables 规则文件路径（由插件调用 nft -f 加载）nft.conf 里通常包含：raw 链（对已打 mark 的 TCP notrack）；mangle prerouting（UDP tproxy）；nat prerouting（TCP redirect）；output 链（本机流量处理）以及上面的 sets 定义（local_ipv4/local_ipv6、fakeip sets 等）
+      ebpf_enable: "ebpf_true"      # 【eBPF 开关】是否尝试挂载 eBPF（TCX ingress） "ebpf_true"：会加载内嵌 proxy.o，rewrite 常量，写 map，attach 到接口 "ebpf_false"：不加载 eBPF，只走 nft set 匹配（fallback） ⚠️ 真实生效前提：内核必须提供 BTF（/sys/kernel/btf/vmlinux），否则 CO-RE 会失败
+      ebpf_iface: "br-lan"      # eBPF 挂载的接口名（一般是 LAN bridge）插件会把 eBPF 程序挂到这个接口的 ingress 上 如果接口名不对（比如你是 br0/lan），即使 ebpf_true 也会 attach 失败
+      mihomo_port: ""      # 写入 eBPF 的“mihomo 入站端口”常量
+      singbox_port: "7894"      # 写入 eBPF 的“sing-box 入站端口”常量 用途通常是：eBPF 在识别/绕过代理回环流量时需要知道“代理监听端口” ⚠️ 端口一定要与你实际 nft.conf 的 tproxy/redirect 端口、以及代理程序入站一致 你之前已经改过端口规划的话，这里也必须同步改，否则会出现“回环/误标记/绕不过”的问题
+      mihomo_fakeip_v4: ""      # mihomo FakeIP IPv4 网段 作用：nft fallback：nft.conf 里通常有 set mihomo_ipv4/ipv6，用于匹配 FakeIP -> 走 mihomo 链 eBPF 模式：会把这两个前缀写入 eBPF 的 route_rules map，并打 mark=2 ⚠️ 必须与你实际 FakeIP 网段一致（否则 FakeIP 流量匹配不到，就“看起来没生效”）
+      mihomo_fakeip_v6: ""      # mihomo FakeIP IPv6 网段 作用：nft fallback：nft.conf 里通常有 set mihomo_ipv4/ipv6，用于匹配 FakeIP -> 走 mihomo 链 eBPF 模式：会把这两个前缀写入 eBPF 的 route_rules map，并打 mark=2 ⚠️ 必须与你实际 FakeIP 网段一致（否则 FakeIP 流量匹配不到，就“看起来没生效”）
+      purenft: "mosdns_nft/purenft.conf" #不使用ebpf功能时的nft规则 
+      dns_hijack: "ebpf_hijack" # 填入 "ebpf_hijack" 激活精准劫持。填其它值或留空则关闭 eBPF DNS 劫持
+      hjack_dip4: "192.168.1.1"  # 主路由的局域网 IPv4 地址。务必是单个 IP，不要带 /24 掩码
+      # hjack_dip6: "fd00::1"     # 主路由的局域网 IPv6 地址。如果你的内网没有 IPv6，可以留空 ""

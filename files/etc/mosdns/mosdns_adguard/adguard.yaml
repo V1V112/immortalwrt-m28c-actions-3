@@ -1,0 +1,8 @@
+plugins:
+  # AdGuard 在线规则插件。
+  # 源码固定读取：dir/config.json；本地规则文件固定为：dir/<id>.rules。
+  - tag: adguard
+    type: adguard_rule
+    args:
+      dir: "mosdns_adguard/"
+      socks5: ""

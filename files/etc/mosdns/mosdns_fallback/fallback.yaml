@@ -1,0 +1,76 @@
+plugins:
+
+  ## FallBack 组 ##
+
+  # fallback 的 primary 服务器：转发至 SmartDNS direct 组（127.0.0.1:531）
+  - tag: fallback_direct
+    type: forward
+    args:
+      concurrent: 1
+      upstreams:
+        - addr: 127.0.0.1:531      # SmartDNS Direct
+
+  # fallback 的 secondary 服务器：转发至 SmartDNS proxy 组（127.0.0.1:532）
+  - tag: fallback_proxy
+    type: forward
+    args:
+      concurrent: 1
+      upstreams:
+        - addr: 127.0.0.1:532      # SmartDNS Proxy
+
+  # fallback 的 primary 判定逻辑：
+  # - 先用 direct 解析
+  # - 若 A/AAAA 结果包含 CN IP => 直连
+  # - 若 A/AAAA 结果完全不含 CN IP / 无应答 => 丢弃应答，触发 secondary（proxy）
+  - tag: fallback_primary
+    type: sequence
+    args:
+      - exec: $fallback_direct      # 使用 SmartDNS Direct 解析
+
+      # A/AAAA 有应答，并且至少包含 CN IP：接受（直连）
+      - matches:
+        - "qtype 1 28"      # A / AAAA 类型
+        - "has_resp"      # 有应答
+        - "resp_ip $geoip:cn"      # 包含 CN IP
+        exec: accept      # 结束分支
+
+      # A/AAAA 有应答，并且至少包含 Cloudflare IP：接受（直连）
+      - matches:
+        - "qtype 1 28"      # A / AAAA 类型
+        - "has_resp"      # 有应答
+        - "resp_ip $geoip:cloudflare"      # 包含 Cloudflare IP
+        exec: accept      # 结束分支
+
+      # A/AAAA 有应答，但完全没有 CN IP：丢弃，触发 secondary
+      - matches:
+        - "qtype 1 28"      # A / AAAA 类型
+        - "has_resp"      # 有应答
+        - "!resp_ip $geoip:cn"      # 完全没有 CN IP
+        exec: drop_resp      # 无应答：丢弃，触发 secondary
+
+      # A/AAAA：无应答丢弃，触发 secondary
+      - matches:
+        - "qtype 1 28"      # A / AAAA 类型
+        - "!has_resp"      # 无应答
+        exec: drop_resp      # 无应答：丢弃，触发 secondary
+
+      # 域名不存在：直接接受，别回滚去 proxy “再试一次”
+      - matches:
+        - "rcode 3"     # NXDOMAIN
+        exec: accept      # 结束分支
+
+      # 其它 qtype：无应答不回滚
+      - matches:
+        - "!has_resp"      # 无应答
+        exec: accept      # 结束分支
+
+      - exec: accept      # 其它情况接受（不回滚）
+
+  # fallback：如果 primary 抛错/无应答/被 drop_resp/超时，则采用 secondary
+  - tag: fallback
+    type: fallback
+    args:
+      primary: fallback_primary      # primary 服务器：先用 fallback_primary 逻辑判定是否接受直连结果，或丢弃触发 secondary
+      secondary: fallback_proxy      # secondary 服务器：fallback_primary 判定不接受时的后备方案，直接转发到 SmartDNS Proxy
+      threshold: 1000      # primary 响应时间超过 500ms 则视为超时，触发 secondary
+      always_standby: true      # 始终保持 secondary 处于待命状态，避免触发时才启动导致的额外延迟

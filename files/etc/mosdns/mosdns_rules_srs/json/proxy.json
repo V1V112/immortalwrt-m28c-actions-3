@@ -1,0 +1,26 @@
+[
+  {
+    "name": "geolocation-!cn",
+    "type": "geolocation-!cn",
+    "files": "mosdns_rules_srs/srs/geosite/proxy/geolocation-!cn.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/geolocation-!cn.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 26425,
+    "last_updated": "2026-05-22T00:00:00Z"
+  },
+  {
+    "name": "geolocation-cn@!cn",
+    "type": "geolocation-cn@!cn",
+    "files": "mosdns_rules_srs/srs/geosite/proxy/geolocation-cn@!cn.srs",
+    "url": "https://raw.githubusercontent.com/nekolsd/sing-geosite/refs/heads/rule-set/geolocation-cn%40!cn.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 235,
+    "last_updated": "2026-05-22T00:00:00Z"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "259df415-c0c9-402d-844e-37eec627e1c7",
+    "name": "AdBlock DNS Filters",
+    "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt",
+    "enabled": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 258920,
+    "last_updated": "2026-05-22T00:00:00Z"
+  }
+]

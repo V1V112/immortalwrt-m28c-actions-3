@@ -1,0 +1,74 @@
+[
+  {
+    "name": "geosite:ai",
+    "type": "geosite:ai",
+    "files": "mosdns_rules_srs/srs/geosite/category-ai-!cn.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/category-ai-!cn.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 152,
+    "last_updated": "2026-05-22T00:00:00Z"
+  },
+  {
+    "name": "geosite:gfw",
+    "type": "geosite:gfw",
+    "files": "mosdns_rules_srs/srs/geosite/gfw.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/gfw.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 4222,
+    "last_updated": "2026-05-22T00:00:00Z"
+  },
+  {
+    "name": "geosite:github",
+    "type": "geosite:github",
+    "files": "mosdns_rules_srs/srs/geosite/github.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/github.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 61,
+    "last_updated": "2026-05-22T00:00:00Z"
+  },
+  {
+    "name": "geosite:onedrive",
+    "type": "geosite:onedrive",
+    "files": "mosdns_rules_srs/srs/geosite/onedrive.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/onedrive.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 19,
+    "last_updated": "2026-05-22T00:00:00Z"
+  },
+  {
+    "name": "geosite:pikpak",
+    "type": "geosite:pikpak",
+    "files": "mosdns_rules_srs/srs/geosite/pikpak.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/pikpak.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 7,
+    "last_updated": "2026-05-22T00:00:00Z"
+  },
+  {
+    "name": "geosite:pinterest",
+    "type": "geosite:pinterest",
+    "files": "mosdns_rules_srs/srs/geosite/pinterest.srs",
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/pinterest.srs",
+    "enabled": true,
+    "enable_regexp": true,
+    "auto_update": true,
+    "update_interval_hours": 24,
+    "rule_count": 52,
+    "last_updated": "2026-05-22T00:00:00Z"
+  }
+]

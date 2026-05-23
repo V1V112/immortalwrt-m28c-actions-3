@@ -1,0 +1,85 @@
+#### 数据列表 ####
+plugins: 
+
+#  # 自定义hosts
+#  - tag: hosts
+#    type: hosts
+#    args:
+#      files:
+#        - mosdns_load_rules/geoip/hosts      # 自定义hosts
+
+#  ## 广告域名列表 ##
+#  - tag: geosite:reject
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/reject.txt
+#
+#  ## 直连域名列表 ##
+#  - tag: geosite:direct
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/direct.txt
+#      exps: 
+#        # 以 domain: 开头，域匹配。例如：domain:a.com 会匹配自身 a.com，以及其子域名 www.a.com等。
+#        # 以 full: 开头，完整匹配。例如：full:a.com 只会匹配自身。
+#        # 以 keyword: 开头，关键字匹配。例如：keyword:a.com 会匹配包含这个字段的域名，如 a.com.cn, www.a.com.cn。
+#        - keyword:lilyemby.my      # Emby
+#
+#  ## Apple 在中国大陆可直连的域名列表 ##
+#  - tag: geosite:apple-cn
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/apple-cn.txt
+#
+#  ## Google 在中国大陆可直连域名列表 ##
+#  - tag: geosite:google-cn
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/google-cn.txt
+#
+#  ## 代理域名列表 ##
+#  - tag: geosite:proxy
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/proxy.txt
+#
+#  ## GFW 域名列表 ##
+#  - tag: geosite:gfw
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/gfw.txt
+#
+#  ## Pinterest 域名列表 ##
+#  - tag: geosite:pinterest
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/pinterest.txt
+#
+#  ## Github 域名列表 ##
+#  - tag: geosite:github
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/github.txt
+#        
+#  ## PikPak 域名列表 ##
+#  - tag: geosite:pikpak
+#    type: domain_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geosite/pikpak.txt
+#
+#  ## 国内 IP 段 ##
+#  - tag: geoip:cn
+#    type: ip_set
+#    args:
+#      files: 
+#        - mosdns_load_rules/geoip/china-ip.txt
+
